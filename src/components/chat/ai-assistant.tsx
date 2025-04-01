@@ -3,50 +3,89 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { SendHorizontal, MessageSquare, Bot, User } from 'lucide-react';
+import { SendHorizontal, MessageSquare, Bot, User, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export const AIAssistant = () => {
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
     { text: "Hello! I'm your FundOra AI assistant. How can I help you with your financial queries today?", isUser: false },
   ]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const demoResponses: { [key: string]: string } = {
-    investment: "Based on your profile and goals, I recommend considering a diversified portfolio with 40% in index funds, 30% in blue-chip stocks, 20% in government bonds, and 10% in gold ETFs. This balanced approach provides growth potential while managing risk.",
-    retirement: "To plan for retirement, you should aim to save at least 15% of your income. Using compound interest calculations, starting at age 30 with ₹10,000 monthly contributions, with an 8% annual return, you could accumulate approximately ₹2.2 crore by age 60.",
-    loan: "For your home loan inquiry, I recommend comparing options from HDFC, SBI, and ICICI. Current rates range from 8.4% to 8.9%. With your credit profile, you could qualify for up to ₹50 lakhs with a 20-year term. Would you like me to calculate EMI options?",
-    startup: "For early-stage funding, I suggest focusing on these options: angel investors (₹25L-1Cr), seed funds (₹50L-3Cr), or incubator programs that provide both funding and mentorship. Based on your business model, angel investors in the fintech space would be most suitable.",
-    default: "I'm your personalized financial assistant powered by advanced AI. I can provide advice on investments, retirement planning, loan options, tax optimization, and more. I learn from your preferences and financial situation to give you tailored guidance. What would you like to know more about?"
-  };
-
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!input.trim()) return;
     
     // Add user message
-    setMessages([...messages, { text: input, isUser: true }]);
+    setMessages(prev => [...prev, { text: input, isUser: true }]);
+    setIsLoading(true);
     
-    // Generate AI response based on keywords
-    setTimeout(() => {
-      let response = demoResponses.default;
+    try {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': 'AIzaSyASkyEiWCjOXiMMXRySnRBOtVcwegvHWe4'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `You are a financial assistant for FundOra, helping users with financial advice. 
+                  Keep responses concise but informative.
+                  Current query: ${input}`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 800,
+          }
+        })
+      });
+
+      const data = await response.json();
       
-      if (input.toLowerCase().includes('invest')) {
-        response = demoResponses.investment;
-      } else if (input.toLowerCase().includes('retire')) {
-        response = demoResponses.retirement;
-      } else if (input.toLowerCase().includes('loan')) {
-        response = demoResponses.loan;
-      } else if (input.toLowerCase().includes('startup') || input.toLowerCase().includes('funding')) {
-        response = demoResponses.startup;
+      if (data.candidates && data.candidates.length > 0) {
+        const aiResponse = data.candidates[0].content.parts[0].text;
+        setMessages(prev => [...prev, { text: aiResponse, isUser: false }]);
+      } else if (data.promptFeedback) {
+        // Handle content filtering/blocking
+        toast({
+          title: "Response blocked",
+          description: "The AI response was blocked due to content safety filters.",
+          variant: "destructive",
+        });
+        setMessages(prev => [...prev, { 
+          text: "I'm sorry, but I couldn't generate a response for that query. Please try asking something else.", 
+          isUser: false 
+        }]);
+      } else {
+        throw new Error("Unexpected API response format");
       }
-      
-      setMessages(prev => [...prev, { text: response, isUser: false }]);
-    }, 1000);
-    
-    setInput('');
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get a response from the AI assistant. Please try again.",
+        variant: "destructive",
+      });
+      setMessages(prev => [...prev, { 
+        text: "I apologize, but I'm having trouble processing your request right now. Please try again later.", 
+        isUser: false 
+      }]);
+    } finally {
+      setIsLoading(false);
+      setInput('');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isLoading) {
       handleSendMessage();
     }
   };
@@ -96,12 +135,18 @@ export const AIAssistant = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="flex-1"
+                disabled={isLoading}
               />
               <Button 
                 onClick={handleSendMessage} 
                 className="bg-fundora-orange hover:bg-orange-600"
+                disabled={isLoading || !input.trim()}
               >
-                <SendHorizontal className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <SendHorizontal className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <div className="mt-2 text-xs text-gray-500 flex items-center">

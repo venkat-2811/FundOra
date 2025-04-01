@@ -3,16 +3,21 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+// Define types for the user profiles
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type UserType = 'general_public' | 'startup_founder' | 'investor' | 'student';
 
 interface AuthContextProps {
   session: Session | null;
   user: User | null;
-  userType: 'general_public' | 'startup_founder' | 'investor' | 'student' | null;
+  userType: UserType | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
-  updateUserType: (type: 'general_public' | 'startup_founder' | 'investor' | 'student') => Promise<void>;
+  updateUserType: (type: UserType) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -21,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userType, setUserType] = useState<'general_public' | 'startup_founder' | 'investor' | 'student' | null>(null);
+  const [userType, setUserType] = useState<UserType | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -72,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data) {
-        setUserType(data.user_type);
+        setUserType(data.user_type as UserType);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -140,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUserType = async (type: 'general_public' | 'startup_founder' | 'investor' | 'student') => {
+  const updateUserType = async (type: UserType) => {
     if (!user) return;
     
     try {

@@ -1,11 +1,42 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, userType, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const getUserTypeLabel = () => {
+    switch (userType) {
+      case 'general_public':
+        return 'General Public';
+      case 'startup_founder':
+        return 'Startup Founder';
+      case 'investor':
+        return 'Investor';
+      case 'student':
+        return 'Student';
+      default:
+        return null;
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200">
@@ -43,12 +74,45 @@ export function Navbar() {
 
           {/* CTA buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" className="border-fundora-orange text-fundora-orange hover:bg-fundora-orange hover:text-white">
-              Log in
-            </Button>
-            <Button className="bg-fundora-orange hover:bg-orange-600 text-white">
-              Get Started
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="border-fundora-orange text-fundora-orange hover:bg-fundora-orange hover:text-white">
+                    <User className="h-4 w-4 mr-2" />
+                    {user.email?.split('@')[0]}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  {getUserTypeLabel() && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="font-normal text-sm text-gray-500">
+                        User Type: {getUserTypeLabel()}
+                      </DropdownMenuLabel>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500 cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="outline" className="border-fundora-orange text-fundora-orange hover:bg-fundora-orange hover:text-white">
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button className="bg-fundora-orange hover:bg-orange-600 text-white">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -86,16 +150,43 @@ export function Navbar() {
             </Link>
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
-            <div className="flex items-center px-5 space-x-3">
-              <Button variant="outline" className="w-full border-fundora-orange text-fundora-orange hover:bg-fundora-orange hover:text-white">
-                Log in
-              </Button>
-            </div>
-            <div className="mt-3 px-5 pb-3">
-              <Button className="w-full bg-fundora-orange hover:bg-orange-600 text-white">
-                Get Started
-              </Button>
-            </div>
+            {user ? (
+              <div className="px-5 py-3">
+                <div className="text-base font-medium text-gray-800 mb-2">
+                  {user.email}
+                </div>
+                {getUserTypeLabel() && (
+                  <div className="text-sm text-gray-500 mb-3">
+                    User Type: {getUserTypeLabel()}
+                  </div>
+                )}
+                <Button 
+                  variant="outline" 
+                  className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center px-5 space-x-3">
+                  <Link to="/auth" className="w-full">
+                    <Button variant="outline" className="w-full border-fundora-orange text-fundora-orange hover:bg-fundora-orange hover:text-white">
+                      Log in
+                    </Button>
+                  </Link>
+                </div>
+                <div className="mt-3 px-5 pb-3">
+                  <Link to="/auth" className="w-full">
+                    <Button className="w-full bg-fundora-orange hover:bg-orange-600 text-white">
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

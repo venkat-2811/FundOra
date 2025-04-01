@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/ui/navbar';
 import Footer from '@/components/layout/footer';
@@ -8,7 +7,8 @@ import RoleSelector from '@/components/role-selector';
 import StatsSection from '@/components/stats-section';
 import TestimonialsSection from '@/components/testimonials-section';
 import AIAssistant from '@/components/chat/ai-assistant';
-import { Button } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
 
 const Index = () => {

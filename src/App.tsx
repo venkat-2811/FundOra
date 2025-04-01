@@ -12,6 +12,9 @@ import StartupFounders from "./pages/StartupFounders";
 import Investors from "./pages/Investors";
 import Students from "./pages/Students";
 import Auth from "./pages/Auth";
+import About from "./pages/About";
+import Features from "./pages/Features";
+import Contact from "./pages/Contact";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/contact" element={<Contact />} />
             <Route 
               path="/general-public" 
               element={

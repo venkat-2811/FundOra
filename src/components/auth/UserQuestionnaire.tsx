@@ -14,11 +14,12 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface QuestionnaireProps {
   userType: 'investor' | 'startup_founder';
+  onComplete: () => Promise<void>;
 }
 
-const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType }) => {
+const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType, onComplete }) => {
   const navigate = useNavigate();
-  const { user, userType: authUserType } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   
   // Common fields
@@ -72,8 +73,7 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType }) => {
       const profileData = {
         full_name: name,
         bio,
-        experience_level: experience,
-        onboarding_completed: true
+        experience_level: experience
       };
       
       // Save to the appropriate table based on user type
@@ -89,8 +89,6 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType }) => {
           });
         
         if (error) throw error;
-        
-        navigate('/investors');
       } else {
         const { error } = await supabase
           .from('startup_profiles')
@@ -104,14 +102,22 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType }) => {
           });
         
         if (error) throw error;
-        
-        navigate('/startup-founders');
       }
+      
+      // Update the onboarding_completed flag in the profiles table
+      await onComplete();
       
       toast({
         title: "Profile completed",
         description: "Your profile has been saved successfully!"
       });
+      
+      // Navigate to the appropriate dashboard
+      if (userType === 'investor') {
+        navigate('/investors');
+      } else {
+        navigate('/startup-founders');
+      }
     } catch (error: any) {
       toast({
         title: "Error saving profile",

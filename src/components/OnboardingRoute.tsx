@@ -13,7 +13,7 @@ const OnboardingRoute: React.FC<OnboardingRouteProps> = ({
   children, 
   requiredUserType 
 }) => {
-  const { user, userType, loading, onboardingCompleted } = useAuth();
+  const { user, userType, loading, onboardingCompleted, completeOnboarding } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,7 +43,10 @@ const OnboardingRoute: React.FC<OnboardingRouteProps> = ({
     return (
       <div className="min-h-screen flex flex-col">
         <main className="flex-grow container mx-auto px-4 pt-24 pb-12">
-          <UserQuestionnaire userType={requiredUserType as 'investor' | 'startup_founder'} />
+          <UserQuestionnaire 
+            userType={requiredUserType as 'investor' | 'startup_founder'} 
+            onComplete={completeOnboarding}
+          />
         </main>
       </div>
     );

@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<UserType | null>(null);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(true);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 0);
         } else {
           setUserType(null);
-          setOnboardingCompleted(true);
+          setOnboardingCompleted(false);
         }
       }
     );

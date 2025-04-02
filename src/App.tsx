@@ -16,6 +16,7 @@ import About from "./pages/About";
 import Features from "./pages/Features";
 import Contact from "./pages/Contact";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OnboardingRoute from "./components/OnboardingRoute";
 
 const queryClient = new QueryClient();
 
@@ -41,17 +42,17 @@ const App = () => (
             <Route 
               path="/startup-founders" 
               element={
-                <ProtectedRoute requiredUserType="startup_founder">
+                <OnboardingRoute requiredUserType="startup_founder">
                   <StartupFounders />
-                </ProtectedRoute>
+                </OnboardingRoute>
               } 
             />
             <Route 
               path="/investors" 
               element={
-                <ProtectedRoute requiredUserType="investor">
+                <OnboardingRoute requiredUserType="investor">
                   <Investors />
-                </ProtectedRoute>
+                </OnboardingRoute>
               } 
             />
             <Route 

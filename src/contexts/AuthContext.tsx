@@ -14,10 +14,12 @@ interface AuthContextProps {
   user: User | null;
   userType: UserType | null;
   loading: boolean;
+  onboardingCompleted: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserType: (type: UserType) => Promise<void>;
+  completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -27,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<UserType | null>(null);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 0);
         } else {
           setUserType(null);
+          setOnboardingCompleted(true);
         }
       }
     );
@@ -65,9 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      // Fetch the basic profile first
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_type')
+        .select('user_type, onboarding_completed')
         .eq('id', userId)
         .maybeSingle();
 
@@ -78,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data) {
         setUserType(data.user_type as UserType);
+        setOnboardingCompleted(data.onboarding_completed ?? false);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -151,12 +157,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ user_type: type })
+        .update({ 
+          user_type: type,
+          onboarding_completed: false // Reset onboarding when user type changes
+        })
         .eq('id', user.id);
 
       if (error) throw error;
       
       setUserType(type);
+      setOnboardingCompleted(false);
+      
       toast({
         title: "Profile updated",
         description: "Your user type has been updated.",
@@ -169,6 +180,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
   };
+  
+  const completeOnboarding = async () => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      setOnboardingCompleted(true);
+    } catch (error: any) {
+      console.error('Error completing onboarding:', error);
+    }
+  };
 
   return (
     <AuthContext.Provider
@@ -177,10 +205,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         userType,
         loading,
+        onboardingCompleted,
         signIn,
         signUp,
         signOut,
         updateUserType,
+        completeOnboarding,
       }}
     >
       {children}

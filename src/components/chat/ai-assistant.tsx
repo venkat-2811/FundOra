@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, User, Bot } from 'lucide-react';
 import { useGeminiAssistant } from '@/integrations/gemini/aiAssistant';
 import { useAuth } from '@/contexts/AuthContext';
+import MessageList from './message-list';
+import MessageInput from './message-input';
+import SuggestedPrompts from './suggested-prompts';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -56,20 +56,15 @@ const getAssistantType = (userType: string | null) => {
 
 const AIAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
   const { getAssistantResponse, isLoading, error } = useGeminiAssistant();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { userType } = useAuth();
   
-  // Get the assistant type based on user type
   const assistantType = getAssistantType(userType);
   
-  // Get preset prompts based on user type
   const suggestedPrompts = userType ? presetUserPrompts[userType] : presetUserPrompts.general_public;
   
   useEffect(() => {
-    // Add welcome message when component mounts
     const welcomeMessage = {
       role: 'assistant' as const,
       content: `Hello! I'm your ${assistantType}, powered by Gemini 2.0 Flash. How can I help you today?`,
@@ -77,11 +72,6 @@ const AIAssistant: React.FC = () => {
     };
     setMessages([welcomeMessage]);
   }, [assistantType]);
-  
-  useEffect(() => {
-    // Scroll to bottom whenever messages change
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
   
   useEffect(() => {
     if (error) {
@@ -93,13 +83,9 @@ const AIAssistant: React.FC = () => {
     }
   }, [error, toast]);
   
-  const handleSend = async (event: React.FormEvent | null, promptText?: string) => {
-    if (event) event.preventDefault();
-    
-    const messageText = promptText || input;
+  const handleSend = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
     
-    // Add user message to chat
     const userMessage: Message = {
       role: 'user',
       content: messageText,
@@ -107,20 +93,16 @@ const AIAssistant: React.FC = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
     
-    // Format conversation history for the API
     const history = messages.map(msg => ({
       role: msg.role,
       content: msg.content
     }));
     
     try {
-      // Get response from Gemini
       const responseText = await getAssistantResponse(messageText, history);
       
       if (responseText) {
-        // Add assistant response to chat
         const assistantMessage: Message = {
           role: 'assistant',
           content: responseText,
@@ -140,8 +122,7 @@ const AIAssistant: React.FC = () => {
   };
   
   const handlePromptClick = (prompt: string) => {
-    setInput(prompt);
-    handleSend(null, prompt);
+    handleSend(prompt);
   };
   
   return (
@@ -153,66 +134,16 @@ const AIAssistant: React.FC = () => {
       </CardHeader>
       <CardContent className="p-0">
         <div className="flex flex-col h-[370px]">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message, index) => (
-              <div 
-                key={index} 
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`rounded-lg px-4 py-2 max-w-[80%] flex items-start gap-2
-                  ${message.role === 'user' 
-                    ? 'bg-blue-100 text-blue-900' 
-                    : 'bg-gray-100 text-gray-900'}`}
-                >
-                  {message.role === 'assistant' && (
-                    <Bot className="h-5 w-5 mt-0.5 text-green-600 shrink-0" />
-                  )}
-                  <div>
-                    <div className="whitespace-pre-wrap text-sm">
-                      {message.content}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                  {message.role === 'user' && (
-                    <User className="h-5 w-5 mt-0.5 text-blue-600 shrink-0" />
-                  )}
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          
-          <div className="p-3 bg-gray-50">
-            <div className="flex flex-wrap gap-2 mb-3">
-              {suggestedPrompts.map((prompt, index) => (
-                <button
-                  key={index}
-                  onClick={() => handlePromptClick(prompt)}
-                  className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 py-1 px-2 rounded-full transition-colors"
-                  disabled={isLoading}
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </div>
+          <MessageList messages={messages} />
+          <SuggestedPrompts 
+            prompts={suggestedPrompts} 
+            onPromptClick={handlePromptClick} 
+            isLoading={isLoading} 
+          />
         </div>
       </CardContent>
       <CardFooter className="border-t p-3">
-        <form onSubmit={handleSend} className="flex w-full space-x-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask anything..."
-            className="flex-1"
-            disabled={isLoading}
-          />
-          <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={isLoading || !input.trim()}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
-        </form>
+        <MessageInput onSend={handleSend} isLoading={isLoading} />
       </CardFooter>
     </Card>
   );

@@ -73,7 +73,7 @@ const AIAssistant: React.FC = () => {
     // Add welcome message when component mounts
     const welcomeMessage = {
       role: 'assistant' as const,
-      content: `Hello! I'm your ${assistantType}. How can I help you today?`,
+      content: `Hello! I'm your ${assistantType}, powered by Gemini 2.0 Flash. How can I help you today?`,
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);

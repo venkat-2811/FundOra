@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,9 +10,69 @@ import {
   BarChart4, Calendar, Lightbulb, DollarSign,
   PiggyBank, Zap, ChevronRight
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export const StartupDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const { user } = useAuth();
+  const [startupProfile, setStartupProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchStartupProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('startup_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching startup profile:', error);
+          return;
+        }
+        
+        if (data) {
+          setStartupProfile(data);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchStartupProfile();
+    
+    const startupProfileChannel = supabase
+      .channel('startup-profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'startup_profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setStartupProfile(payload.new);
+          toast({
+            title: "Profile Updated",
+            description: "Your startup profile has been updated",
+          });
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(startupProfileChannel);
+    };
+  }, [user, toast]);
   
   const investorMatches = [
     { 

@@ -84,6 +84,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data) {
         setUserType(data.user_type as UserType);
         setOnboardingCompleted(!!data.onboarding_completed);
+        
+        // Set up real-time subscription for profile changes
+        const profileChannel = supabase
+          .channel('profile-changes')
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'profiles',
+              filter: `id=eq.${userId}`
+            },
+            (payload) => {
+              setUserType(payload.new.user_type as UserType);
+              setOnboardingCompleted(!!payload.new.onboarding_completed);
+              
+              toast({
+                title: "Profile Updated",
+                description: "Your profile has been updated",
+              });
+            }
+          )
+          .subscribe();
+          
+        return () => {
+          supabase.removeChannel(profileChannel);
+        };
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);

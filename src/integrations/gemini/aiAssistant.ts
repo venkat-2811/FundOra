@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 const GEMINI_API_KEY = "AIzaSyASkyEiWCjOXiMMXRySnRBOtVcwegvHWe4";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v2/models/gemini-2.0-flash:generateContent";
 
 export async function generateGeminiResponse(prompt: string, history: { role: string; content: string }[] = []) {
   try {

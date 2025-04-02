@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface StartupMatch {
   id: string;
@@ -27,10 +28,65 @@ export const InvestorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [startupMatches, setStartupMatches] = useState<StartupMatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [investorProfile, setInvestorProfile] = useState<any>(null);
+  const { toast } = useToast();
+  
+  // Fetch investor profile data
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchInvestorProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('investor_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching investor profile:', error);
+          return;
+        }
+        
+        if (data) {
+          setInvestorProfile(data);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+    
+    fetchInvestorProfile();
+    
+    // Set up real-time subscription for investor profile changes
+    const investorProfileChannel = supabase
+      .channel('investor-profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'investor_profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setInvestorProfile(payload.new);
+          toast({
+            title: "Profile Updated",
+            description: "Your investor profile has been updated",
+          });
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(investorProfileChannel);
+    };
+  }, [user, toast]);
   
   useEffect(() => {
     // Fetch startup matches - in a real app, this would come from the database
-    // Here we're simulating this with dummy data
+    // Here we're simulating this with dummy data for now
     const fetchStartupMatches = async () => {
       setLoading(true);
       
@@ -90,6 +146,16 @@ export const InvestorDashboard = () => {
     };
     
     fetchStartupMatches();
+    
+    // Setup real-time channel for startup matches when implemented
+    // const startupMatchesChannel = supabase
+    //  .channel('startup-matches-changes')
+    //  .on(...)
+    //  .subscribe();
+    
+    // return () => {
+    //   supabase.removeChannel(startupMatchesChannel);
+    // };
   }, [user]);
   
   const upcomingCalls = [

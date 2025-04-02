@@ -9,12 +9,52 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      investor_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          experience_level: string | null
+          full_name: string | null
+          id: string
+          investment_thesis: string | null
+          preferred_sectors: string[] | null
+          typical_investment_size: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          experience_level?: string | null
+          full_name?: string | null
+          id?: string
+          investment_thesis?: string | null
+          preferred_sectors?: string[] | null
+          typical_investment_size?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          experience_level?: string | null
+          full_name?: string | null
+          id?: string
+          investment_thesis?: string | null
+          preferred_sectors?: string[] | null
+          typical_investment_size?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
           email: string
           full_name: string | null
           id: string
+          onboarding_completed: boolean | null
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"] | null
         }
@@ -23,6 +63,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          onboarding_completed?: boolean | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"] | null
         }
@@ -31,8 +72,51 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          onboarding_completed?: boolean | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"] | null
+        }
+        Relationships: []
+      }
+      startup_profiles: {
+        Row: {
+          bio: string | null
+          company_name: string | null
+          created_at: string
+          experience_level: string | null
+          full_name: string | null
+          funding_stage: string | null
+          id: string
+          industry: string | null
+          pitch_deck_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string
+          experience_level?: string | null
+          full_name?: string | null
+          funding_stage?: string | null
+          id?: string
+          industry?: string | null
+          pitch_deck_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string
+          experience_level?: string | null
+          full_name?: string | null
+          funding_stage?: string | null
+          id?: string
+          industry?: string | null
+          pitch_deck_url?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

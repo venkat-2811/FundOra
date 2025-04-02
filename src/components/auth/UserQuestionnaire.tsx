@@ -73,7 +73,8 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType, onComplete 
       const profileData = {
         full_name: name,
         bio,
-        experience_level: experience
+        experience_level: experience,
+        user_id: user.id
       };
       
       // Save to the appropriate table based on user type
@@ -81,7 +82,6 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType, onComplete 
         const { error } = await supabase
           .from('investor_profiles')
           .upsert({
-            user_id: user.id,
             ...profileData,
             investment_thesis: investmentThesis,
             preferred_sectors: preferredSectors,
@@ -93,7 +93,6 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType, onComplete 
         const { error } = await supabase
           .from('startup_profiles')
           .upsert({
-            user_id: user.id,
             ...profileData,
             company_name: companyName,
             industry: industryCategory,

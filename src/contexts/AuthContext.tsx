@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data) {
         setUserType(data.user_type as UserType);
-        setOnboardingCompleted(data.onboarding_completed ?? false);
+        setOnboardingCompleted(!!data.onboarding_completed);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);

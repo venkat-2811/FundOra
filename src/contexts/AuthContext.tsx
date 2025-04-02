@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .update({ 
           user_type: type,
           onboarding_completed: false // Reset onboarding when user type changes
-        })
+        } as Database['public']['Tables']['profiles']['Update'])
         .eq('id', user.id);
 
       if (error) throw error;
@@ -187,7 +187,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ onboarding_completed: true })
+        .update({ 
+          onboarding_completed: true 
+        } as Database['public']['Tables']['profiles']['Update'])
         .eq('id', user.id);
 
       if (error) throw error;

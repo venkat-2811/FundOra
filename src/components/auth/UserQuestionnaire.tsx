@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
 interface QuestionnaireProps {
   userType: 'investor' | 'startup_founder';
@@ -79,6 +80,7 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType, onComplete 
       
       // Save to the appropriate table based on user type
       if (userType === 'investor') {
+        // Type-safe approach for investor profiles
         const { error } = await supabase
           .from('investor_profiles')
           .upsert({
@@ -86,10 +88,11 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType, onComplete 
             investment_thesis: investmentThesis,
             preferred_sectors: preferredSectors,
             typical_investment_size: investmentSize
-          });
+          } as Database['public']['Tables']['investor_profiles']['Insert']);
         
         if (error) throw error;
       } else {
+        // Type-safe approach for startup profiles
         const { error } = await supabase
           .from('startup_profiles')
           .upsert({
@@ -98,7 +101,7 @@ const UserQuestionnaire: React.FC<QuestionnaireProps> = ({ userType, onComplete 
             industry: industryCategory,
             funding_stage: fundingStage,
             pitch_deck_url: pitchDeck
-          });
+          } as Database['public']['Tables']['startup_profiles']['Insert']);
         
         if (error) throw error;
       }

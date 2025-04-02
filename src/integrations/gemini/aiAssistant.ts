@@ -2,21 +2,19 @@
 import { useEffect, useState } from "react";
 
 const GEMINI_API_KEY = "AIzaSyASkyEiWCjOXiMMXRySnRBOtVcwegvHWe4";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v2/models/gemini-2.0-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 export async function generateGeminiResponse(prompt: string, history: { role: string; content: string }[] = []) {
   try {
     // Format the conversation history for Gemini API
-    const formattedHistory = history.map(msg => ({
-      role: msg.role === "user" ? "user" : "model",
+    const formattedMessages = history.map(msg => ({
       parts: [{ text: msg.content }]
     }));
 
     // Add the current prompt
-    const messages = [
-      ...formattedHistory,
+    const contents = [
+      ...formattedMessages,
       {
-        role: "user",
         parts: [{ text: prompt }]
       }
     ];
@@ -27,7 +25,7 @@ export async function generateGeminiResponse(prompt: string, history: { role: st
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        contents: messages,
+        contents: contents,
         generationConfig: {
           temperature: 0.7,
           topK: 40,

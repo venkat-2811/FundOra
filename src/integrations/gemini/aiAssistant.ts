@@ -6,18 +6,25 @@ const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/
 
 export async function generateGeminiResponse(prompt: string, history: { role: string; content: string }[] = []) {
   try {
-    // Format the conversation history for Gemini API
-    const formattedMessages = history.map(msg => ({
-      parts: [{ text: msg.content }]
-    }));
-
+    // Format the conversation history as contents for Gemini API
+    const contents = [];
+    
+    // Add conversation history
+    if (history.length > 0) {
+      // Convert history to the format Gemini expects
+      const messages = history.map(msg => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }]
+      }));
+      
+      contents.push(...messages);
+    }
+    
     // Add the current prompt
-    const contents = [
-      ...formattedMessages,
-      {
-        parts: [{ text: prompt }]
-      }
-    ];
+    contents.push({
+      role: 'user',
+      parts: [{ text: prompt }]
+    });
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: "POST",
@@ -55,6 +62,7 @@ export async function generateGeminiResponse(prompt: string, history: { role: st
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error("Gemini API error response:", errorData);
       throw new Error(`Gemini API error: ${JSON.stringify(errorData)}`);
     }
 
@@ -93,7 +101,9 @@ export function useGeminiAssistant() {
       setIsLoading(false);
       return response;
     } catch (error: any) {
-      setError(error.message || "Failed to get response from AI assistant");
+      const errorMessage = error.message || "Failed to get response from AI assistant";
+      console.error("Error in getAssistantResponse:", errorMessage);
+      setError(errorMessage);
       setIsLoading(false);
       return null;
     }

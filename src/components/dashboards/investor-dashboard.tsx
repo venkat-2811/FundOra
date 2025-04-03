@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,12 +22,25 @@ interface StartupMatch {
   lastActivity: string;
 }
 
+interface InvestorProfile {
+  id: string;
+  user_id: string;
+  investment_thesis?: string;
+  preferred_sectors?: string[];
+  typical_investment_size?: string;
+  full_name?: string;
+  bio?: string;
+  experience_level?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export const InvestorDashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [startupMatches, setStartupMatches] = useState<StartupMatch[]>([]);
   const [loading, setLoading] = useState(true);
-  const [investorProfile, setInvestorProfile] = useState<any>(null);
+  const [investorProfile, setInvestorProfile] = useState<InvestorProfile | null>(null);
   const { toast } = useToast();
   
   // Fetch investor profile data
@@ -45,6 +57,13 @@ export const InvestorDashboard = () => {
           
         if (error) {
           console.error('Error fetching investor profile:', error);
+          if (error.code !== 'PGRST116') { // Not found error
+            toast({
+              title: "Error fetching profile",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
           return;
         }
         
@@ -53,6 +72,8 @@ export const InvestorDashboard = () => {
         }
       } catch (error) {
         console.error('Error:', error);
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -70,7 +91,7 @@ export const InvestorDashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          setInvestorProfile(payload.new);
+          setInvestorProfile(payload.new as InvestorProfile);
           toast({
             title: "Profile Updated",
             description: "Your investor profile has been updated",
@@ -84,19 +105,19 @@ export const InvestorDashboard = () => {
     };
   }, [user, toast]);
   
+  // Fetch startup matches - for now using dummy data
+  // In a production app, this would come from the database
   useEffect(() => {
-    // Fetch startup matches - in a real app, this would come from the database
-    // Here we're simulating this with dummy data for now
     const fetchStartupMatches = async () => {
       setLoading(true);
       
-      // In a real implementation, you would fetch actual data from your database
+      // This is where we'd fetch real startup matches from Supabase in a production app
       // const { data, error } = await supabase
       //  .from('startup_matches')
       //  .select('*')
       //  .eq('investor_id', user?.id)
       
-      // For now, we'll use dummy data
+      // For demonstration purposes with dummy data
       setTimeout(() => {
         const dummyMatches: StartupMatch[] = [
           {
@@ -143,21 +164,22 @@ export const InvestorDashboard = () => {
         setStartupMatches(dummyMatches);
         setLoading(false);
       }, 800);
+      
+      // In a production app, we would set up real-time subscription for matches
+      // const startupMatchesChannel = supabase
+      //  .channel('startup-matches-changes')
+      //  .on(...)
+      //  .subscribe();
+      
+      // return () => {
+      //   supabase.removeChannel(startupMatchesChannel);
+      // };
     };
     
     fetchStartupMatches();
-    
-    // Setup real-time channel for startup matches when implemented
-    // const startupMatchesChannel = supabase
-    //  .channel('startup-matches-changes')
-    //  .on(...)
-    //  .subscribe();
-    
-    // return () => {
-    //   supabase.removeChannel(startupMatchesChannel);
-    // };
   }, [user]);
   
+  // Sample data for dashboard
   const upcomingCalls = [
     { id: 1, company: 'EcoTech Solutions', date: 'Oct 15, 2023', time: '3:00 PM' },
     { id: 2, company: 'MediConnect', date: 'Oct 17, 2023', time: '11:30 AM' }
@@ -180,6 +202,9 @@ export const InvestorDashboard = () => {
     <div className="w-full rounded-xl border overflow-hidden bg-white shadow-md">
       <div className="bg-gradient-to-r from-purple-700 to-indigo-600 p-4">
         <h3 className="text-lg font-semibold text-white">Investor Dashboard</h3>
+        {investorProfile && investorProfile.full_name && (
+          <p className="text-sm text-white opacity-80">Welcome back, {investorProfile.full_name}</p>
+        )}
       </div>
       
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">

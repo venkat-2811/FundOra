@@ -14,10 +14,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+interface StartupProfile {
+  id: string;
+  user_id: string;
+  company_name?: string;
+  industry?: string;
+  funding_stage?: string;
+  pitch_deck_url?: string;
+  full_name?: string;
+  bio?: string;
+  experience_level?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export const StartupDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { user } = useAuth();
-  const [startupProfile, setStartupProfile] = useState<any>(null);
+  const [startupProfile, setStartupProfile] = useState<StartupProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
@@ -34,15 +48,22 @@ export const StartupDashboard = () => {
           
         if (error) {
           console.error('Error fetching startup profile:', error);
+          if (error.code !== 'PGRST116') { // Not found error
+            toast({
+              title: "Error fetching profile",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
           return;
         }
         
         if (data) {
           setStartupProfile(data);
-          setLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -60,7 +81,7 @@ export const StartupDashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          setStartupProfile(payload.new);
+          setStartupProfile(payload.new as StartupProfile);
           toast({
             title: "Profile Updated",
             description: "Your startup profile has been updated",
@@ -216,6 +237,11 @@ export const StartupDashboard = () => {
     <div className="w-full rounded-xl border overflow-hidden bg-white shadow-md">
       <div className="bg-gradient-to-r from-fundora-dark to-blue-800 p-4">
         <h3 className="text-lg font-semibold text-white">Startup Founder Dashboard</h3>
+        {startupProfile && (startupProfile.full_name || startupProfile.company_name) && (
+          <p className="text-sm text-white opacity-80">
+            {startupProfile.company_name ? `${startupProfile.company_name}` : `Welcome, ${startupProfile.full_name}`}
+          </p>
+        )}
       </div>
       
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -283,26 +309,32 @@ export const StartupDashboard = () => {
                 <CardDescription>Investors interested in your industry and stage</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {investorMatches.slice(0, 3).map(investor => (
-                    <div key={investor.id} className="flex justify-between items-center border-b pb-2">
-                      <div>
-                        <p className="text-sm font-medium">{investor.name}</p>
-                        <p className="text-xs text-gray-500">{investor.focus}</p>
+                {loading ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-pulse">Loading matches...</div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {investorMatches.slice(0, 3).map(investor => (
+                      <div key={investor.id} className="flex justify-between items-center border-b pb-2">
+                        <div>
+                          <p className="text-sm font-medium">{investor.name}</p>
+                          <p className="text-xs text-gray-500">{investor.focus}</p>
+                        </div>
+                        <Badge className={getMatchScoreColor(investor.matchScore)}>
+                          {investor.matchScore}% Match
+                        </Badge>
                       </div>
-                      <Badge className={getMatchScoreColor(investor.matchScore)}>
-                        {investor.matchScore}% Match
-                      </Badge>
-                    </div>
-                  ))}
-                  <Button 
-                    variant="ghost" 
-                    className="w-full text-fundora-dark hover:text-fundora-dark/80"
-                    onClick={() => setActiveTab('investors')}
-                  >
-                    View All Matches
-                  </Button>
-                </div>
+                    ))}
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-fundora-dark hover:text-fundora-dark/80"
+                      onClick={() => setActiveTab('investors')}
+                    >
+                      View All Matches
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -437,50 +469,56 @@ export const StartupDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Investor</TableHead>
-                    <TableHead>Focus Areas</TableHead>
-                    <TableHead>Investment Stage</TableHead>
-                    <TableHead>Match Score</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {investorMatches.map(investor => (
-                    <TableRow key={investor.id}>
-                      <TableCell className="font-medium">{investor.name}</TableCell>
-                      <TableCell>{investor.focus}</TableCell>
-                      <TableCell>{investor.stage}</TableCell>
-                      <TableCell>
-                        <Badge className={getMatchScoreColor(investor.matchScore)}>
-                          {investor.matchScore}%
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(investor.status)}>
-                          {investor.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                            <Book className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                            <MessageSquare className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="sm" className="h-7 bg-fundora-dark hover:bg-fundora-dark/80">
-                            Connect
-                          </Button>
-                        </div>
-                      </TableCell>
+              {loading ? (
+                <div className="flex justify-center py-4">
+                  <div className="animate-pulse">Loading investor matches...</div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Investor</TableHead>
+                      <TableHead>Focus Areas</TableHead>
+                      <TableHead>Investment Stage</TableHead>
+                      <TableHead>Match Score</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {investorMatches.map(investor => (
+                      <TableRow key={investor.id}>
+                        <TableCell className="font-medium">{investor.name}</TableCell>
+                        <TableCell>{investor.focus}</TableCell>
+                        <TableCell>{investor.stage}</TableCell>
+                        <TableCell>
+                          <Badge className={getMatchScoreColor(investor.matchScore)}>
+                            {investor.matchScore}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(investor.status)}>
+                            {investor.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                              <Book className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                              <MessageSquare className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" className="h-7 bg-fundora-dark hover:bg-fundora-dark/80">
+                              Connect
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

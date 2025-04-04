@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -93,6 +92,13 @@ const MicroInvestment = () => {
   };
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+  const formatValue = (value: any): string => {
+    if (typeof value === 'number') {
+      return `$${value.toFixed(2)}`;
+    }
+    return `$${value}`;
+  };
 
   return (
     <FeatureTemplate
@@ -199,7 +205,7 @@ const MicroInvestment = () => {
                             <XAxis dataKey="month" />
                             <YAxis />
                             <Tooltip 
-                              formatter={(value) => [`$${value.toFixed(2)}`, 'Portfolio Value']}
+                              formatter={(value) => [formatValue(value), 'Portfolio Value']}
                             />
                             <Legend />
                             <Line

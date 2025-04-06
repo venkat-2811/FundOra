@@ -1,69 +1,29 @@
-# Welcome to your Lovable project
+# Welcome to FundOra
+![FundOra logo](https://github.com/user-attachments/assets/9b451d43-fe29-4b3c-a319-530fb4772a0b)
 
-## Project info
+# DEVELOPMENT DIAGRAMS OF FundOra
 
-**URL**: https://lovable.dev/projects/8df0362f-6aad-485a-8604-e5a7545489d2
+![Process - Flow Diagram](https://github.com/user-attachments/assets/6cd554bb-f00e-4d66-badf-e600177fd07e)
+![Architecture](https://github.com/user-attachments/assets/6f420078-1dd0-4894-a2df-3e83b14f86d2)
+![User-Diagram](https://github.com/user-attachments/assets/776751ab-2ee7-4c7e-b583-6eb36183813c)
 
-## How can I edit this code?
+# WireFrames/Mock Visuals : 
 
-There are several ways of editing your application.
+![WireFrames](https://github.com/user-attachments/assets/e8fb2468-fffa-454e-bcab-e131ec9a2771)
 
-**Use Lovable**
+![WireFrames-2](https://github.com/user-attachments/assets/cbdae359-3856-4818-9ebd-c26fef54a872)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8df0362f-6aad-485a-8604-e5a7545489d2) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/8df0362f-6aad-485a-8604-e5a7545489d2) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+# SCREEN SHOTS : 
+![SS-1](https://github.com/user-attachments/assets/82efe9fc-5d9a-483c-87ed-e896330cae74)
+![SS-13](https://github.com/user-attachments/assets/d4f01f6a-296f-4842-a149-108277aa7196)
+![SS-12](https://github.com/user-attachments/assets/334f7b8d-6af1-43d1-a9ac-a4085667a3b3)
+![SS-11](https://github.com/user-attachments/assets/d1e321b3-d216-431e-a6ba-4e7db1f83c8a)
+![SS-10](https://github.com/user-attachments/assets/fa2de359-acb5-4b27-b6b3-d36371ffe8ac)
+![ss-9](https://github.com/user-attachments/assets/6b9b5d31-d2fd-4e45-9cc0-3865a0256a16)
+![SS-8](https://github.com/user-attachments/assets/cc310e3f-5ff9-455c-815c-d6d6c3a10a64)
+![SS-7](https://github.com/user-attachments/assets/834f46e9-d0b0-4d78-8c66-cca6ec6c66e9)
+![SS-6](https://github.com/user-attachments/assets/ad962776-5647-4990-a425-4c7db3e94bcd)
+![SS-5](https://github.com/user-attachments/assets/410042c0-bc95-412f-b3f8-2e606402c859)
+![SS-4](https://github.com/user-attachments/assets/ee024982-c713-4d97-9427-f2937325d8fe)
+![SS-3](https://github.com/user-attachments/assets/e5ec7bcb-f12f-480d-82ca-a2cd8bdeaf53)
+![SS-2](https://github.com/user-attachments/assets/07727acc-88d7-485f-9254-7529ab686a21)
